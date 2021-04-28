@@ -1,6 +1,6 @@
 # Rust on the esp32c3
 
-**NOTE** highly experimental with no emphasis on usability, do not expect support.
+**NOTE** highly experimental at the moment, do not expect support.
 
 ## Building and flashing
 

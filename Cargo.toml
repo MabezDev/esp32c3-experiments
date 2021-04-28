@@ -10,7 +10,3 @@ edition = "2018"
 panic-halt = "0.2.0"
 riscv = "0.6.0"
 riscv-rt = "0.8.0"
-
-[dependencies.esp32]
-version = "0.10.0"
-path = "/home/mabez/development/rust/embedded/hal/esp32"
