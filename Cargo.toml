@@ -9,4 +9,8 @@ edition = "2018"
 [dependencies]
 panic-halt = "0.2.0"
 riscv = "0.6.0"
-riscv-rt = "0.8.0"
+
+
+[dependencies.riscv-rt] 
+version = "0.8.0"
+path = "/home/mabez/development/rust/embedded/util/riscv-rt"
