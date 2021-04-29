@@ -160,6 +160,7 @@ dependencies = [
 [[package]]
 name = "riscv-rt"
 version = "0.8.0"
+source = "git+https://github.com/MabezDev/riscv-rt?rev=6b55e4aa3895924e31bcd151f2f0ab840836fa07#6b55e4aa3895924e31bcd151f2f0ab840836fa07"
 dependencies = [
  "r0",
  "riscv",
@@ -170,6 +171,7 @@ dependencies = [
 [[package]]
 name = "riscv-rt-macros"
 version = "0.1.6"
+source = "git+https://github.com/MabezDev/riscv-rt?rev=6b55e4aa3895924e31bcd151f2f0ab840836fa07#6b55e4aa3895924e31bcd151f2f0ab840836fa07"
 dependencies = [
  "proc-macro2",
  "quote",
