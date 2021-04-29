@@ -1,6 +1,7 @@
 MEMORY
 {
     /*
+        https://github.com/espressif/esptool/blob/master/esptool.py#L1919
         MEMORY_MAP = [[0x00000000, 0x00010000, "PADDING"],
                   [0x3C000000, 0x3C800000, "DROM"],
                   [0x3FC80000, 0x3FCE0000, "DRAM"],
@@ -13,15 +14,11 @@ MEMORY
                   [0x50000000, 0x50002000, "RTC_DRAM"],
                   [0x600FE000, 0x60100000, "MEM_INTERNAL2"]]
     */
-    /*
-        https://github.com/espressif/esptool/blob/master/esptool.py#L1919
-        IROM_MAP_START = 0x42000000
-        IROM_MAP_END   = 0x42800000
-        DROM_MAP_START = 0x3c000000
-        DROM_MAP_END   = 0x3c800000
-    */
-    IRAM : ORIGIN = 0x4037C000, LENGTH = 128k
-    IROM : ORIGIN = 0x42000020, LENGTH = 0x800000
+    /* 400K of on soc RAM, 16K reserved for cache */
+    ICACHE : ORIGIN = 0x4037C000,  LENGTH = 0x4000
+    IRAM : ORIGIN = 0x4037C000 + 0x4000, LENGTH = 400K - 0x4000
+    /* 384K of on soc ROM */
+    IROM : ORIGIN = 0x42000020, LENGTH = 0x60000
 }
 
 
