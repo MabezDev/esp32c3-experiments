@@ -1,0 +1,22 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "cwd": "${workspaceRoot}",
+            "executable": "target/riscv32imc-unknown-none-elf/debug/esp32c3",
+            "name": "debug",
+            "request": "attach",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "interface": "jtag",
+            "serverpath": "${env:HOME}/programs/openocd-esp32/bin/openocd",
+            "toolchainPrefix": "riscv64-unknown-elf",
+            "configFiles": [
+                "openocd.cfg"
+            ],
+        },
+    ]
+}
