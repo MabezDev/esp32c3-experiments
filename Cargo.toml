@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 panic-halt = "0.2.0"
 riscv = "0.6.0"
+esp32c3 = "0.1.2"
 
 
 [dependencies.riscv-rt] 
