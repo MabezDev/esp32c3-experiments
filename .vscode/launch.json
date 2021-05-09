@@ -14,8 +14,16 @@
             "interface": "jtag",
             "serverpath": "${env:HOME}/programs/openocd-esp32/bin/openocd",
             "toolchainPrefix": "riscv64-unknown-elf",
+            "openOCDPreConfigLaunchCommands": [
+                "set ESP_RTOS none"
+            ],
             "configFiles": [
                 "openocd.cfg"
+            ],
+            "overrideAttachCommands": [
+                "set remote hardware-watchpoint-limit 2",
+                "mon halt",
+                "flushregs",
             ],
         },
     ]

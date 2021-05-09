@@ -5,6 +5,7 @@
 use panic_halt as _;
 
 use riscv_rt::entry;
+use core::fmt::Write;
 
 #[entry]
 fn main() -> ! {
@@ -37,5 +38,21 @@ fn main() -> ! {
         core::ptr::write_volatile(0x600080a8 as *mut _, 0u32); // enable write protect
     }
 
+    writeln!(Uart, "Hello world!").unwrap();
+
     loop {}
+}
+
+extern "C" {
+    // a ROM function, see esp32c3-link.x
+    fn uart_tx_one_char(byte: u8) -> i32;
+}
+struct Uart;
+
+impl core::fmt::Write for Uart {
+    fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        Ok(for &b in s.as_bytes() {
+            unsafe { uart_tx_one_char(b) };
+        })
+    }
 }
