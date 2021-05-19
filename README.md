@@ -4,7 +4,12 @@
 
 ## Building and flashing
 
-As the target is builtin to rust already, simply run 
+Add target to your toolchain
+```bash
+rustup target add riscv32imc-unknown-none-elf
+```
+
+As the target is ready, simply run
 ```bash
 cargo build --target riscv32imc-unknown-none-elf
 ```
