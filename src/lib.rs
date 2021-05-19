@@ -1,4 +1,5 @@
 #![no_std]
+#![feature(llvm_asm)]
 
 use void::Void;
 
@@ -58,6 +59,7 @@ impl embedded_hal::digital::v2::OutputPin for GpioOutput {
     }
 }
 
+/// uS timer
 pub struct EtsTimer{
     delay: u32
 }
@@ -121,5 +123,28 @@ pub fn disable_wdts() {
         core::ptr::write_volatile(0x60008090 as *mut _, 0u32);
         core::ptr::write_volatile(0x600080a8 as *mut _, 0u32); // enable write protect
     }
+}
+
+pub fn disable_interrupts() {
+    // disable interrupts, `csrwi        mie,0` throws an exception on the esp32c3
+    unsafe {
+        let mut _tmp: u32;
+        llvm_asm!("csrrs $0, mstatus, $1": "=r"(_tmp) : "rK"(0x00000008))
+    };
+}
+
+pub fn enable_cycle_counter() {
+    unsafe {
+        llvm_asm!("csrw 0x7e0, $0" :: "rK"(0x01));
+        llvm_asm!("csrw 0x7e1, $0" :: "rK"(0x01));
+    }
+}
+
+pub fn get_cycle_count() -> u32 {
+    let mut count: u32;
+    unsafe {
+        llvm_asm!("csrr $0, 0x07e2": "=r"(count) : "rK"(0x00000008))
+    };
+    count
 }
 

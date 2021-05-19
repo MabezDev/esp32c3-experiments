@@ -1,36 +1,61 @@
 #![no_std]
 #![no_main]
-#![feature(llvm_asm)]
 
-use embedded_hal::{digital::v2::OutputPin, prelude::_embedded_hal_timer_CountDown};
+use embedded_hal::prelude::*;
 use panic_halt as _;
 
 use core::fmt::Write;
-use riscv_rt::entry;
+use riscv_rt::{TrapFrame, entry};
 
-use esp32c3_lib::{EtsTimer, GpioOutput, Uart, disable_wdts};
+use esp32c3_lib::{EtsTimer, GpioOutput, Uart, disable_wdts, enable_cycle_counter, get_cycle_count};
+
+use smart_leds::{SmartLedsWrite, RGB8};
 
 #[entry]
 fn main() -> ! {
-    // disable interrupts, `csrwi        mie,0` throws an exception on the esp32c3
-    unsafe {
-        let mut _tmp: u32;
-        llvm_asm!("csrrs $0, mstatus, $1": "=r"(_tmp) : "rK"(0x00000008))
-    };
+    
 
     // disable wdt's
     disable_wdts();
 
-    let mut gpio18 = GpioOutput::new(18);
-
     writeln!(Uart, "Hello world!").unwrap();
 
-    let mut delay = EtsTimer::new(1_000_000);
+    enable_cycle_counter();
 
+    writeln!(Uart, "MCYCLE A: {}", get_cycle_count()).unwrap();
+    
+    let mut delay = EtsTimer::new(1_000_000);
+    
+    let mut data: [RGB8; 3] = [RGB8::default(); 3];
+    let empty: [RGB8; 3] = [RGB8::default(); 3];
+    let mut ws = ws2812_timer_delay::Ws2812::new(EtsTimer::new(1), GpioOutput::new(8));
+    
+    writeln!(Uart, "MCYCLE B: {}", get_cycle_count()).unwrap();
+    
     loop {
-        gpio18.set_high().unwrap();
+        data[0] = RGB8 {
+            r: 0,
+            g: 0,
+            b: 0x10,
+        };
+        data[1] = RGB8 {
+            r: 0,
+            g: 0x10,
+            b: 0,
+        };
+        data[2] = RGB8 {
+            r: 0x10,
+            g: 0,
+            b: 0,
+        };
+        ws.write(data.iter().cloned()).unwrap();
         nb::block!(delay.wait()).unwrap();
-        gpio18.set_low().unwrap();
+        ws.write(empty.iter().cloned()).unwrap();
         nb::block!(delay.wait()).unwrap();
     }
+}
+
+#[export_name = "ExceptionHandler"]
+fn esp32c3_exception(_trap_frame: &TrapFrame) -> ! {
+    panic!("EXCEPTION")
 }
