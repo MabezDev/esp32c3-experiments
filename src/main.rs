@@ -2,26 +2,13 @@
 #![no_main]
 #![feature(llvm_asm)]
 
+use embedded_hal::{digital::v2::OutputPin, prelude::_embedded_hal_timer_CountDown};
 use panic_halt as _;
 
 use core::fmt::Write;
 use riscv_rt::entry;
 
-const GPIO_BASE: u32 = 0x60004000;
-
-/// GPIO output enable reg
-const GPIO_ENABLE_W1TS_REG: u32 = GPIO_BASE + 0x0020;
-
-/// GPIO output set register
-const GPIO_OUT_W1TS_REG: u32 = GPIO_BASE + 0x0008;
-/// GPIO output clear register
-const GPIO_OUT_W1TC_REG: u32 = GPIO_BASE + 0x000C;
-
-const BLINKY_GPIO: u32 = 18;
-
-/// GPIO function mode
-const GPIO_FUNCX_OUT_BASE: u32 = GPIO_BASE + 0x0554;
-const GPIO_FUNCX_OUT_SEL_CFG: u32 = GPIO_FUNCX_OUT_BASE + (BLINKY_GPIO * 4);
+use esp32c3_lib::{EtsTimer, GpioOutput, Uart, disable_wdts};
 
 #[entry]
 fn main() -> ! {
@@ -32,63 +19,18 @@ fn main() -> ! {
     };
 
     // disable wdt's
-    unsafe {
-        // super wdt
-        core::ptr::write_volatile(0x600080B0 as *mut _, 0x8F1D312Au32); // disable write protect
-        core::ptr::write_volatile(
-            0x600080AC as *mut _,
-            core::ptr::read_volatile(0x600080AC as *const u32) | 1 << 31,
-        ); // set RTC_CNTL_SWD_AUTO_FEED_EN
-        core::ptr::write_volatile(0x600080B0 as *mut _, 0u32); // enable write protect
+    disable_wdts();
 
-        // tg0 wdg
-        core::ptr::write_volatile(0x6001f064 as *mut _, 0x50D83AA1u32); // disable write protect
-        core::ptr::write_volatile(0x6001F048 as *mut _, 0u32);
-        core::ptr::write_volatile(0x6001f064 as *mut _, 0u32); // enable write protect
-
-        // tg1 wdg
-        core::ptr::write_volatile(0x60020064 as *mut _, 0x50D83AA1u32); // disable write protect
-        core::ptr::write_volatile(0x60020048 as *mut _, 0u32);
-        core::ptr::write_volatile(0x60020064 as *mut _, 0u32); // enable write protect
-
-        // rtc wdg
-        core::ptr::write_volatile(0x600080a8 as *mut _, 0x50D83AA1u32); // disable write protect
-        core::ptr::write_volatile(0x60008090 as *mut _, 0u32);
-        core::ptr::write_volatile(0x600080a8 as *mut _, 0u32); // enable write protect
-    }
+    let mut gpio18 = GpioOutput::new(18);
 
     writeln!(Uart, "Hello world!").unwrap();
 
-    // configure the pin as an output
-    unsafe {
-        core::ptr::write_volatile(GPIO_ENABLE_W1TS_REG as *mut _, 0x1 << BLINKY_GPIO);
-        // 0x100 makes this pin a simple gpio pin - see the technical reference for more info
-        core::ptr::write_volatile(GPIO_FUNCX_OUT_SEL_CFG as *mut _, 0x80);
-    }
+    let mut delay = EtsTimer::new(1_000_000);
 
     loop {
-        unsafe {
-            // turn on the LED
-            core::ptr::write_volatile(GPIO_OUT_W1TS_REG as *mut _, 0x1 << BLINKY_GPIO);
-            ets_delay_us(1_000_000);
-            // turn off the LED`
-            core::ptr::write_volatile(GPIO_OUT_W1TC_REG as *mut _, 0x1 << BLINKY_GPIO);
-            ets_delay_us(1_000_000);
-        }
-    }
-}
-
-extern "C" {
-    // ROM functions, see esp32c3-link.x
-    fn uart_tx_one_char(byte: u8) -> i32;
-    fn ets_delay_us(us: u32);
-}
-struct Uart;
-
-impl core::fmt::Write for Uart {
-    fn write_str(&mut self, s: &str) -> core::fmt::Result {
-        Ok(for &b in s.as_bytes() {
-            unsafe { uart_tx_one_char(b) };
-        })
+        gpio18.set_high().unwrap();
+        nb::block!(delay.wait()).unwrap();
+        gpio18.set_low().unwrap();
+        nb::block!(delay.wait()).unwrap();
     }
 }
