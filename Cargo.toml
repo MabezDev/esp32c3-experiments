@@ -15,7 +15,7 @@ void = { version = "1.0.2", default-features = false }
 
 smart-leds = "0.3.0"
 smart-leds-trait = "0.2"
-ws2812-timer-delay = "0.3.0" 
+ws2812-timer-delay = { version = "0.3.0" } 
 
 [dependencies.riscv] 
 version = "0.6.0"

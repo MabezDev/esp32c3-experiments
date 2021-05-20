@@ -148,3 +148,42 @@ pub fn get_cycle_count() -> u32 {
     count
 }
 
+/// cycle accurate delay using the cycle counter register
+pub fn delay(clocks: u32) {
+    let start = get_cycle_count();
+    loop {
+        if get_cycle_count().wrapping_sub(start) >= clocks {
+            break;
+        }
+    }
+}
+
+pub struct CycleCounterTimer {
+    delay: u32
+}
+
+impl CycleCounterTimer {
+    pub fn new(delay_cycles: u32) -> Self {
+        Self {
+            delay: delay_cycles,
+        }
+    }
+}
+
+impl embedded_hal::timer::CountDown for CycleCounterTimer {
+    type Time = u32;
+
+    fn start<T>(&mut self, count: T)
+    where
+        T: Into<Self::Time> {
+        self.delay = count.into();
+    }
+
+    fn wait(&mut self) -> nb::Result<(), Void> {
+        Ok(delay(self.delay))
+    }
+}
+
+impl embedded_hal::timer::Periodic for CycleCounterTimer {}
+
+
