@@ -1,6 +1,6 @@
 #![no_std]
 #![no_main]
-#![feature(llvm_asm)]
+#![feature(asm)]
 
 use embedded_hal::{digital::v2::OutputPin, prelude::_embedded_hal_timer_CountDown};
 use panic_halt as _;
@@ -15,7 +15,7 @@ fn main() -> ! {
     // disable interrupts, `csrwi        mie,0` throws an exception on the esp32c3
     unsafe {
         let mut _tmp: u32;
-        llvm_asm!("csrrs $0, mstatus, $1": "=r"(_tmp) : "rK"(0x00000008))
+        asm!("csrrsi {0}, mstatus, {1}", out(reg) _tmp, const 0x00000008)
     };
 
     // disable wdt's
