@@ -1,6 +1,9 @@
 #![no_std]
 
+
 use void::Void;
+
+use esp32c3::GPIO;
 
 extern "C" {
     // ROM functions, see esp32c3-link.x
@@ -14,32 +17,16 @@ pub struct GpioOutput {
 }
 
 impl GpioOutput {
-
-    const GPIO_BASE: u32 = 0x60004000;
-
-    /// GPIO output enable reg
-    const GPIO_ENABLE_W1TS_REG: u32 = Self::GPIO_BASE + 0x0020;
-
-    /// GPIO output set register
-    const GPIO_OUT_W1TS_REG: u32 = Self::GPIO_BASE + 0x0008;
-    /// GPIO output clear register
-    const GPIO_OUT_W1TC_REG: u32 = Self::GPIO_BASE + 0x000C;
-
-
-    /// GPIO function mode
-    const GPIO_FUNCX_OUT_BASE: u32 = Self::GPIO_BASE + 0x0554;
     
-    pub fn new(gpio: u32) -> Self {
-        let funcx_sel: u32 = Self::GPIO_FUNCX_OUT_BASE + (gpio * 4);
-        // configure the pin as an output
-        unsafe {
-            core::ptr::write_volatile(Self::GPIO_ENABLE_W1TS_REG as *mut _, 0x1 << gpio);
-            // 0x100 makes this pin a simple gpio pin - see the technical reference for more info
-            core::ptr::write_volatile(funcx_sel as *mut _, 0x80);
-        }
+    pub fn new(index: u32) -> Self {
+
+        let gpio = unsafe{ &*GPIO::ptr() };
+
+        gpio.out_w1ts.modify(|_, w| unsafe { w.bits(0x1 << index) });
+        gpio.func_out_sel_cfg[index as usize].modify(|_, w| unsafe { w.func0_out_sel().bits(0x80) });
 
         Self {
-            index: gpio
+            index,
         }
     }
 }
@@ -48,12 +35,14 @@ impl embedded_hal::digital::v2::OutputPin for GpioOutput {
     type Error = ();
 
     fn set_low(&mut self) -> Result<(), Self::Error> {
-        unsafe { core::ptr::write_volatile(Self::GPIO_OUT_W1TC_REG as *mut _, 0x1 << self.index) };
+        let gpio = unsafe{ &*GPIO::ptr() };
+        gpio.out_w1tc.modify(|_, w| unsafe { w.bits(0x1 << self.index) });
         Ok(())
     }
 
     fn set_high(&mut self) -> Result<(), Self::Error> {
-        unsafe { core::ptr::write_volatile(Self::GPIO_OUT_W1TS_REG as *mut _, 0x1 << self.index) };
+        let gpio = unsafe{ &*GPIO::ptr() };
+        gpio.out_w1ts.modify(|_, w| unsafe { w.bits(0x1 << self.index) });
         Ok(())
     }
 }
