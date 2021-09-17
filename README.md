@@ -14,9 +14,9 @@ As the target is ready, simply run
 cargo build --target riscv32imc-unknown-none-elf
 ```
 
-Convert elf to esp image
+Convert elf to binary image
 ```bash
-esptool.py --chip esp32c3 elf2image --flash_mode=dio -o esp32c3.bin target/riscv32imc-unknown-none-elf/debug/esp32c3
+riscv32-esp-elf-objcopy -O binary target/riscv32imc-unknown-none-elf/debug/esp32c3 esp32c3.bin
 ```
 
 Flash image

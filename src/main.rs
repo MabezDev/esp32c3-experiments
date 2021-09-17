@@ -8,7 +8,14 @@ use panic_halt as _;
 use core::fmt::Write;
 use riscv_rt::entry;
 
-use esp32c3_lib::{EtsTimer, GpioOutput, Uart, disable_wdts};
+use esp32c3_lib::{disable_wdts, EtsTimer, GpioOutput, Uart};
+
+// make sure we have something in our data section
+#[used]
+static DATA_SECTION_TEST: &'static str = "TEST DATA";
+// make sure we have something in our bss section
+#[used]
+static mut BSS_SECTION_TEST: [u8; 12] = [0xAA; 12];
 
 #[entry]
 fn main() -> ! {
@@ -21,16 +28,20 @@ fn main() -> ! {
     // disable wdt's
     disable_wdts();
 
-    let mut gpio18 = GpioOutput::new(18);
+    let mut gpio = GpioOutput::new(9);
 
     writeln!(Uart, "Hello world!").unwrap();
+    writeln!(Uart, "{}", DATA_SECTION_TEST).unwrap();
 
     let mut delay = EtsTimer::new(1_000_000);
 
     loop {
-        gpio18.set_high().unwrap();
+        writeln!(Uart, "HIGH").unwrap();
+        gpio.set_high().unwrap();
         nb::block!(delay.wait()).unwrap();
-        gpio18.set_low().unwrap();
+
+        writeln!(Uart, "LOW").unwrap();
+        gpio.set_low().unwrap();
         nb::block!(delay.wait()).unwrap();
     }
 }

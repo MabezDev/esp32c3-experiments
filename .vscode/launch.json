@@ -13,7 +13,7 @@
             "servertype": "openocd",
             "interface": "jtag",
             "serverpath": "${env:HOME}/programs/openocd-esp32/bin/openocd",
-            "toolchainPrefix": "riscv64-unknown-elf",
+            "toolchainPrefix": "riscv-none-embed",
             "openOCDPreConfigLaunchCommands": [
                 "set ESP_RTOS none"
             ],
