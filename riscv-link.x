@@ -73,7 +73,7 @@ SECTIONS
   _rodata_size = _erodata - _srodata + 8;
   .data ORIGIN(DRAM) : AT(_text_size + _rodata_size)
   {
-    _sidata = LOADADDR(.data);
+    _sidata = ORIGIN(DROM) + LOADADDR(.data);
     _sdata = .;
     /* Must be called __global_pointer$ for linker relaxations to work. */
     PROVIDE(__global_pointer$ = . + 0x800);

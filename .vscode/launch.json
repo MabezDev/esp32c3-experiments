@@ -5,6 +5,24 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "probe-rs-debug",
+            "request": "attach",
+            "name": "launch",
+            "server": "127.0.0.1:50001",
+            "cwd": "${workspaceFolder}",
+            "program_binary": "target/riscv32imc-unknown-none-elf/debug/esp32c3",
+            "chip": "esp32c3",
+            "connect_under_reset": true,
+            "speed": 10000,
+            // "probe": "PID:VID:<Serial>", //!MODIFY
+            "core_index": 0,
+            "flashing_enabled": false,
+            "reset_after_flashing": true,
+            "halt_after_reset": false,
+            "console_log_level": "Debug", //Error, Warn, Info, Debug
+            "wire_protocol": "Jtag"
+        },
+        {
             "cwd": "${workspaceRoot}",
             "executable": "target/riscv32imc-unknown-none-elf/debug/esp32c3",
             "name": "debug",
@@ -13,7 +31,7 @@
             "servertype": "openocd",
             "interface": "jtag",
             "serverpath": "${env:HOME}/programs/openocd-esp32/bin/openocd",
-            "toolchainPrefix": "riscv-none-embed",
+            "toolchainPrefix": "riscv32-esp-elf",
             "openOCDPreConfigLaunchCommands": [
                 "set ESP_RTOS none"
             ],
