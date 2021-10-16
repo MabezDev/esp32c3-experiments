@@ -28,3 +28,6 @@ path = "src/lib.rs"
 name = "esp32c3"
 test = false
 bench = false
+
+[package.metadata.espflash]
+format = "direct-boot"

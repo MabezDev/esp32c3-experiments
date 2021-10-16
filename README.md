@@ -9,18 +9,8 @@ Add target to your toolchain
 rustup target add riscv32imc-unknown-none-elf
 ```
 
-As the target is ready, simply run
-```bash
-cargo build --target riscv32imc-unknown-none-elf
-```
-
-Convert elf to binary image
-```bash
-riscv32-esp-elf-objcopy -O binary target/riscv32imc-unknown-none-elf/debug/esp32c3 esp32c3.bin
-```
-
-Flash image
+Build and flash the image using [`espflash`](https://github.com/esp-rs/espflash)
 
 ```bash
-esptool.py --chip esp32c3 -p /dev/ttyUSB0 --after hard_reset write_flash 0x0 esp32c3.bin
+cargo espflash /dev/ttyUSB0
 ```
