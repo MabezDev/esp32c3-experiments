@@ -3,12 +3,13 @@
 #![feature(asm)]
 
 use embedded_hal::{digital::v2::OutputPin, prelude::_embedded_hal_timer_CountDown};
-use panic_halt as _;
 
 use core::fmt::Write;
 use riscv_rt::entry;
 
 use esp32c3_lib::{disable_wdts, EtsTimer, GpioOutput, Uart};
+
+use core::sync::atomic::Ordering;
 
 // make sure we have something in our data section
 #[used]
@@ -35,6 +36,9 @@ fn main() -> ! {
 
     let mut delay = EtsTimer::new(1_000_000);
 
+    let a = core::sync::atomic::AtomicUsize::new(1);
+    a.compare_exchange(1, 2, Ordering::Acquire, core::sync::atomic::Ordering::Relaxed).unwrap();
+
     loop {
         writeln!(Uart, "HIGH").unwrap();
         gpio.set_high().unwrap();
@@ -44,4 +48,15 @@ fn main() -> ! {
         gpio.set_low().unwrap();
         nb::block!(delay.wait()).unwrap();
     }
+}
+
+#[panic_handler]
+fn panic(info: &core::panic::PanicInfo) -> ! {
+    writeln!(Uart, "Panic: {:#?}", info).ok();
+    loop{}
+}
+
+#[no_mangle]
+pub fn ExceptionHandler(riscv: &riscv_rt::TrapFrame) {
+    panic!("Unhandled exception at 0x{:08X}", riscv::register::mepc::read());
 }
