@@ -2,6 +2,8 @@
 runner = "riscv64-unknown-elf-gdb -q -x gdb_init"
 rustflags = [
   "-C", "link-arg=-Tesp32c3-link.x",
+  "-C", "link-arg=-Map=build.map",
+  "-C", "link-arg=--whole-archive",
 ]
 
 [build]

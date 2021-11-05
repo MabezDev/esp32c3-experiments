@@ -3,6 +3,7 @@
 #![feature(asm)]
 
 use embedded_hal::{digital::v2::OutputPin, prelude::_embedded_hal_timer_CountDown};
+use riscv_atomic_emulation_trap::atomic_emulation;
 
 use core::fmt::Write;
 use riscv_rt::entry;
@@ -37,7 +38,8 @@ fn main() -> ! {
     let mut delay = EtsTimer::new(1_000_000);
 
     let a = core::sync::atomic::AtomicUsize::new(1);
-    a.compare_exchange(1, 2, Ordering::Acquire, core::sync::atomic::Ordering::Relaxed).unwrap();
+    let x = a.compare_exchange(1, 2, Ordering::Acquire, core::sync::atomic::Ordering::Relaxed).unwrap();
+    writeln!(Uart, "Value of x: {}", x).unwrap();
 
     loop {
         writeln!(Uart, "HIGH").unwrap();
@@ -57,6 +59,15 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
 }
 
 #[no_mangle]
-pub fn ExceptionHandler(riscv: &riscv_rt::TrapFrame) {
-    panic!("Unhandled exception at 0x{:08X}", riscv::register::mepc::read());
+#[allow(non_snake_case)]
+pub unsafe fn ExceptionHandler(riscv: &mut riscv_atomic_emulation_trap::TrapFrame) {
+    writeln!(Uart, "Handling exception at 0x{:08X}", riscv::register::mepc::read()).ok();
+    writeln!(Uart, "Trap before: {:?}", riscv).ok();
+    if atomic_emulation(riscv) {
+        writeln!(Uart, "Trap after: {:?}", riscv).ok();
+        // successfull emulation, move the mepc
+        riscv::register::mepc::write(riscv::register::mepc::read() + core::mem::size_of::<usize>())
+    } else {
+        panic!("Unhandled exception at 0x{:08X}", riscv::register::mepc::read());
+    }
 }
