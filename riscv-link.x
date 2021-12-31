@@ -73,7 +73,6 @@ SECTIONS
   _rodata_size = _erodata - _srodata + 8;
   .data ORIGIN(DRAM) : AT(_text_size + _rodata_size)
   {
-    _sidata = LOADADDR(.data);
     _sdata = .;
     /* Must be called __global_pointer$ for linker relaxations to work. */
     PROVIDE(__global_pointer$ = . + 0x800);
@@ -120,6 +119,8 @@ SECTIONS
   .eh_frame (INFO) : { KEEP(*(.eh_frame)) }
   .eh_frame_hdr (INFO) : { *(.eh_frame_hdr) }
 }
+
+PROVIDE(_sidata = _erodata + 8);
 
 /* Do not exceed this mark in the error messages above                                    | */
 ASSERT(ORIGIN(REGION_TEXT) % 4 == 0, "
