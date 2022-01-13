@@ -1,21 +1,21 @@
 #![no_std]
 #![no_main]
-#![feature(asm)]
+#![feature(asm_const)]
 
 use embedded_hal::{digital::v2::OutputPin, prelude::_embedded_hal_timer_CountDown};
 use panic_halt as _;
 
-use core::fmt::Write;
+use core::{arch::asm, fmt::Write};
 use riscv_rt::entry;
 
 use esp32c3_lib::{disable_wdts, EtsTimer, GpioOutput, Uart};
 
+// make sure we have something in our rodata section
+#[used]
+static RODATA_SECTION_TEST: &'static str = "TEST DATA";
 // make sure we have something in our data section
 #[used]
-static DATA_SECTION_TEST: &'static str = "TEST DATA";
-// make sure we have something in our bss section
-#[used]
-static mut BSS_SECTION_TEST: [u8; 12] = [0xAA; 12];
+static mut DATA_SECTION_TEST: [u8; 12] = [0xAA; 12];
 
 #[entry]
 fn main() -> ! {
@@ -31,7 +31,10 @@ fn main() -> ! {
     let mut gpio = GpioOutput::new(9);
 
     writeln!(Uart, "Hello world!").unwrap();
-    writeln!(Uart, "{}", DATA_SECTION_TEST).unwrap();
+    writeln!(Uart, "{}", RODATA_SECTION_TEST).unwrap();
+    unsafe {
+        writeln!(Uart, "DATA_SECTION_TEST: {:x?}", DATA_SECTION_TEST).unwrap();
+    }
 
     let mut delay = EtsTimer::new(1_000_000);
 
