@@ -3,12 +3,14 @@
 #![feature(asm)]
 
 use embedded_hal::{digital::v2::OutputPin, prelude::_embedded_hal_timer_CountDown};
-use riscv_atomic_emulation_trap::atomic_emulation;
+use riscv_atomic_emulation_trap as _;
 
 use core::fmt::Write;
 use riscv_rt::entry;
 
 use esp32c3_lib::{disable_wdts, EtsTimer, GpioOutput, Uart};
+
+use rtt_target::{rtt_init_print, rprintln};
 
 use core::sync::atomic::Ordering;
 
@@ -30,6 +32,8 @@ fn main() -> ! {
     // disable wdt's
     disable_wdts();
 
+    rtt_init_print!();
+
     let mut gpio = GpioOutput::new(9);
 
     writeln!(Uart, "Hello world!").unwrap();
@@ -41,14 +45,28 @@ fn main() -> ! {
     let x = a.compare_exchange(1, 2, Ordering::Acquire, core::sync::atomic::Ordering::Relaxed).unwrap();
     writeln!(Uart, "Value of x: {}", x).unwrap();
 
+    let old_x = a.fetch_add(1, Ordering::SeqCst);
+    writeln!(Uart, "Old Value of x: {}", old_x).unwrap();
+    let old_x = a.fetch_add(22, Ordering::SeqCst);
+    writeln!(Uart, "Old of x: {}", old_x).unwrap();
+    let fin = a.load(Ordering::Acquire);
+    writeln!(Uart, "Final value of x: {}", fin).unwrap();
+
+    rprintln!("Hello, world from RTT!");
+
+    let mut i = 0;
     loop {
         writeln!(Uart, "HIGH").unwrap();
+        rprintln!("HIGH");
         gpio.set_high().unwrap();
         nb::block!(delay.wait()).unwrap();
 
         writeln!(Uart, "LOW").unwrap();
+        rprintln!("LOW");
         gpio.set_low().unwrap();
         nb::block!(delay.wait()).unwrap();
+        rprintln!("Iteration: {}", i);
+        i += 1;
     }
 }
 
@@ -60,14 +78,6 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
 
 #[no_mangle]
 #[allow(non_snake_case)]
-pub unsafe fn ExceptionHandler(riscv: &mut riscv_atomic_emulation_trap::TrapFrame) {
-    writeln!(Uart, "Handling exception at 0x{:08X}", riscv::register::mepc::read()).ok();
-    writeln!(Uart, "Trap before: {:?}", riscv).ok();
-    if atomic_emulation(riscv) {
-        writeln!(Uart, "Trap after: {:?}", riscv).ok();
-        // successfull emulation, move the mepc
-        riscv::register::mepc::write(riscv::register::mepc::read() + core::mem::size_of::<usize>())
-    } else {
-        panic!("Unhandled exception at 0x{:08X}", riscv::register::mepc::read());
-    }
+pub unsafe fn ExceptionHandler(_frame: &riscv_rt::TrapFrame) {
+    panic!("Unhandled exception at 0x{:08X}", riscv::register::mepc::read());
 }

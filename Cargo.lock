@@ -52,6 +52,7 @@ dependencies = [
  "riscv 0.6.0",
  "riscv-atomic-emulation-trap",
  "riscv-rt",
+ "rtt-target",
  "void",
 ]
 
@@ -208,6 +209,7 @@ name = "riscv-atomic-emulation-trap"
 version = "0.1.0"
 dependencies = [
  "riscv 0.7.0",
+ "riscv-rt",
  "riscv-target",
 ]
 
@@ -239,6 +241,16 @@ checksum = "88aa938cda42a0cf62a20cfe8d139ff1af20c2e681212b5b34adb5a58333f222"
 dependencies = [
  "lazy_static",
  "regex",
+]
+
+[[package]]
+name = "rtt-target"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "065d6058bb1204f51a562a67209e1817cf714759d5cf845aa45c75fa7b0b9d9b"
+dependencies = [
+ "riscv 0.6.0",
+ "ufmt-write",
 ]
 
 [[package]]
@@ -275,6 +287,12 @@ dependencies = [
  "quote",
  "unicode-xid",
 ]
+
+[[package]]
+name = "ufmt-write"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e87a2ed6b42ec5e28cc3b94c09982969e9227600b2e3dcbc1db927a84c06bd69"
 
 [[package]]
 name = "unicode-xid"
