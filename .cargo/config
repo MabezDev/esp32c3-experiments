@@ -2,6 +2,7 @@
 runner = "riscv64-unknown-elf-gdb -q -x gdb_init"
 rustflags = [
   "-C", "link-arg=-Tesp32c3-link.x",
+  "-C", "force-frame-pointers=yes"
 ]
 
 [build]

@@ -26,5 +26,26 @@
                 "flushregs",
             ],
         },
+        {
+            "type": "probe-rs-debug",
+            "request": "launch",
+            "name": "probe_rs Executable launch example",
+            "cwd": "${workspaceFolder}",
+            "programBinary": "target/riscv32imc-unknown-none-elf/debug/esp32c3",
+            "chip": "esp32c3",
+            "connectUnderReset": true,
+            // "speed": 24000, //!MODIFY (or remove)
+            // "probe": "PID:VID:<Serial>", //!MODIFY (or remove)
+            "runtimeExecutable": "probe-rs-debugger",
+            "runtimeArgs": [
+                "debug",
+                "--dap"
+            ],
+            "coreIndex": 0,
+            "flashingEnabled": true,
+            "resetAfterFlashing": true,
+            "haltAfterReset": true,
+            // "consoleLogLevel": "Info", //Error, Warn, Info, Debug, Trace 
+        }
     ]
 }
