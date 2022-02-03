@@ -1,6 +1,8 @@
 #![no_std]
 #![no_main]
-#![feature(asm)]
+#![feature(asm_const)]
+
+use core::arch::asm;
 
 use embedded_hal::{digital::v2::OutputPin, prelude::_embedded_hal_timer_CountDown};
 use riscv_atomic_emulation_trap as _;
